@@ -1,0 +1,139 @@
+
+PROJECT_SHORT_NAME = zapper
+
+BOARD_FILE = $(PROJECT_SHORT_NAME).brd
+SCHEM_FILE = $(PROJECT_SHORT_NAME).sch
+
+EAGLE_BOARD_OPTIONS = -X -N
+EAGLE_PS_OPTIONS = $(EAGLE_BOARD_OPTIONS) -d EPS
+EAGLE_GER_OPTIONS = $(EAGLE_BOARD_OPTIONS) -d GERBER_RS274X
+
+EAGLE_SCHEM_OPTIONS = -X -N -d EPS
+EAGLE_SCHEM_LAYERS = 91 92 94 95 96
+
+all: $(PROJECT_SHORT_NAME).zip $(PROJECT_SHORT_NAME).ps
+
+$(PROJECT_SHORT_NAME).zip: $(PROJECT_SHORT_NAME)_drill.drd $(PROJECT_SHORT_NAME)_top.ger $(PROJECT_SHORT_NAME)_ly1.ger $(PROJECT_SHORT_NAME)_ly2.ger $(PROJECT_SHORT_NAME)_bottom.ger $(PROJECT_SHORT_NAME)_top_silk.ger $(PROJECT_SHORT_NAME)_bottom_silk.ger $(PROJECT_SHORT_NAME)_top_mask.ger $(PROJECT_SHORT_NAME)_bottom_mask.ger
+	zip -T $(PROJECT_SHORT_NAME).zip $(PROJECT_SHORT_NAME)_*.ger $(PROJECT_SHORT_NAME)_*.drd
+
+##### BEGINNING OF EPS LAYER TARGETS ######
+
+$(PROJECT_SHORT_NAME)_drill.eps: $(BOARD_FILE)
+	eagle $(EAGLE_PS_OPTIONS) -o $(PROJECT_SHORT_NAME)_drill.eps $(BOARD_FILE) 20 44 45
+
+$(PROJECT_SHORT_NAME)_top.eps: $(BOARD_FILE)
+	eagle $(EAGLE_PS_OPTIONS) -o $(PROJECT_SHORT_NAME)_top.eps $(BOARD_FILE) 1 17 18 20
+
+$(PROJECT_SHORT_NAME)_ly1.eps: $(BOARD_FILE)
+	eagle $(EAGLE_PS_OPTIONS) -o $(PROJECT_SHORT_NAME)_ly1.eps $(BOARD_FILE) 2 17 18 20
+
+$(PROJECT_SHORT_NAME)_ly2.eps: $(BOARD_FILE)
+	eagle $(EAGLE_PS_OPTIONS) -o $(PROJECT_SHORT_NAME)_ly2.eps $(BOARD_FILE) 15 17 18 20
+
+$(PROJECT_SHORT_NAME)_bottom.eps: $(BOARD_FILE)
+	eagle $(EAGLE_PS_OPTIONS) -o $(PROJECT_SHORT_NAME)_bottom.eps $(BOARD_FILE) 16 17 18 20
+
+$(PROJECT_SHORT_NAME)_top_silk.eps: $(BOARD_FILE)
+	eagle $(EAGLE_PS_OPTIONS) -o $(PROJECT_SHORT_NAME)_top_silk.eps $(BOARD_FILE) 20 21 25 51
+
+$(PROJECT_SHORT_NAME)_bottom_silk.eps: $(BOARD_FILE)
+	eagle $(EAGLE_PS_OPTIONS) -o $(PROJECT_SHORT_NAME)_bottom_silk.eps $(BOARD_FILE) 20 22 26 52
+
+$(PROJECT_SHORT_NAME)_top_mask.eps: $(BOARD_FILE)
+	eagle $(EAGLE_PS_OPTIONS) -o $(PROJECT_SHORT_NAME)_top_mask.eps $(BOARD_FILE) 20 29
+
+$(PROJECT_SHORT_NAME)_bottom_mask.eps: $(BOARD_FILE)
+	eagle $(EAGLE_PS_OPTIONS) -o $(PROJECT_SHORT_NAME)_bottom_mask.eps $(BOARD_FILE) 20 30
+
+$(PROJECT_SHORT_NAME)_overview.eps: $(PROJECT_SHORT_NAME)_drill.eps $(PROJECT_SHORT_NAME)_top.eps $(PROJECT_SHORT_NAME)_ly1.eps $(PROJECT_SHORT_NAME)_ly2.eps $(PROJECT_SHORT_NAME)_bottom.eps $(PROJECT_SHORT_NAME)_top_silk.eps $(PROJECT_SHORT_NAME)_bottom_silk.eps $(PROJECT_SHORT_NAME)_top_mask.eps $(PROJECT_SHORT_NAME)_bottom_mask.eps
+	eagle-combine $(PROJECT_SHORT_NAME) > $(PROJECT_SHORT_NAME)_overview.eps
+
+
+##### END OF EPS LAYER TARGETS ######
+
+##### BEGINNING OF GERBER LAYER TARGETS ######
+
+$(PROJECT_SHORT_NAME)_drill.drd: $(BOARD_FILE)
+	eagle $(EAGLE_BOARD_OPTIONS) -d EXCELLON -o $(PROJECT_SHORT_NAME)_drill.drd $(BOARD_FILE) 20 44 45
+	rm -f $(PROJECT_SHORT_NAME)_drill.dri
+
+$(PROJECT_SHORT_NAME)_top.ger: $(BOARD_FILE)
+	eagle $(EAGLE_GER_OPTIONS) -o $(PROJECT_SHORT_NAME)_top.ger $(BOARD_FILE) 1 17 18 20
+	rm -f $(PROJECT_SHORT_NAME)_top.gpi 
+
+$(PROJECT_SHORT_NAME)_ly1.ger: $(BOARD_FILE)
+	eagle $(EAGLE_GER_OPTIONS) -o $(PROJECT_SHORT_NAME)_ly1.ger $(BOARD_FILE) 2 17 18 20
+	rm -f $(PROJECT_SHORT_NAME)_ly1.gpi
+
+$(PROJECT_SHORT_NAME)_ly2.ger: $(BOARD_FILE)
+	eagle $(EAGLE_GER_OPTIONS) -o $(PROJECT_SHORT_NAME)_ly2.ger $(BOARD_FILE) 15 17 18 20
+	rm -f $(PROJECT_SHORT_NAME)_ly2.gpi
+
+$(PROJECT_SHORT_NAME)_bottom.ger: $(BOARD_FILE)
+	eagle $(EAGLE_GER_OPTIONS) -o $(PROJECT_SHORT_NAME)_bottom.ger $(BOARD_FILE) 16 17 18 20
+	rm -f $(PROJECT_SHORT_NAME)_bottom.gpi
+
+$(PROJECT_SHORT_NAME)_top_silk.ger: $(BOARD_FILE)
+	eagle $(EAGLE_GER_OPTIONS) -o $(PROJECT_SHORT_NAME)_top_silk.ger $(BOARD_FILE) 20 21 25 51
+	rm -f $(PROJECT_SHORT_NAME)_top_silk.gpi
+
+$(PROJECT_SHORT_NAME)_bottom_silk.ger: $(BOARD_FILE)
+	eagle $(EAGLE_GER_OPTIONS) -o $(PROJECT_SHORT_NAME)_bottom_silk.ger $(BOARD_FILE) 20 22 26 52
+	rm -f $(PROJECT_SHORT_NAME)_bottom_silk.gpi
+
+$(PROJECT_SHORT_NAME)_top_mask.ger: $(BOARD_FILE)
+	eagle $(EAGLE_GER_OPTIONS) -o $(PROJECT_SHORT_NAME)_top_mask.ger $(BOARD_FILE) 20 29
+	rm -f $(PROJECT_SHORT_NAME)_top_mask.gpi
+
+$(PROJECT_SHORT_NAME)_bottom_mask.ger: $(BOARD_FILE)
+	eagle $(EAGLE_GER_OPTIONS) -o $(PROJECT_SHORT_NAME)_bottom_mask.ger $(BOARD_FILE) 20 30
+	rm -f $(PROJECT_SHORT_NAME)_bottom_mask.gpi
+
+##### END OF GERBER LAYER TARGETS ######
+
+##### BEGINNING OF DOCUMENTATION TARGETS ######
+
+$(PROJECT_SHORT_NAME).tex: $(PROJECT_SHORT_NAME)_parts.eps $(PROJECT_SHORT_NAME)_s1.eps $(PROJECT_SHORT_NAME)_overview.eps $(PROJECT_SHORT_NAME).txt
+	eagle-makedoc $(PROJECT_SHORT_NAME) `ls $(PROJECT_SHORT_NAME)_s*.eps | wc | cut -c1-8` > $(PROJECT_SHORT_NAME).tex
+
+$(PROJECT_SHORT_NAME).dvi: $(PROJECT_SHORT_NAME).tex 
+	latex $(PROJECT_SHORT_NAME).tex
+	latex $(PROJECT_SHORT_NAME).tex
+
+$(PROJECT_SHORT_NAME).ps: $(PROJECT_SHORT_NAME).dvi
+	dvips -f < $(PROJECT_SHORT_NAME).dvi > $(PROJECT_SHORT_NAME).ps
+
+$(PROJECT_SHORT_NAME)_s1.eps: $(SCHEM_FILE)
+	eagle-sch2ps $(SCHEM_FILE) -r
+
+$(PROJECT_SHORT_NAME)_parts.eps: $(PROJECT_SHORT_NAME)_parts.ps
+	ps2eps -f -R - $(PROJECT_SHORT_NAME)_parts.ps
+
+##### END OF DOCUMENTATION TARGETS ######
+
+##### BEGINNING OF CLEANING TARGETS ######
+
+clean: clean-doc clean-package clean-layers clean-backupfiles
+
+clean-doc:
+	rm -f $(PROJECT_SHORT_NAME).ps
+	rm -f $(PROJECT_SHORT_NAME).dvi
+	rm -f $(PROJECT_SHORT_NAME).lof
+	rm -f $(PROJECT_SHORT_NAME).log
+	rm -f $(PROJECT_SHORT_NAME).aux
+	rm -f $(PROJECT_SHORT_NAME).tex
+
+clean-package:
+	rm -f $(PROJECT_SHORT_NAME).zip
+
+clean-layers:
+	rm -f $(PROJECT_SHORT_NAME)_*.ger
+	rm -f $(PROJECT_SHORT_NAME)_*.drd
+	rm -f $(PROJECT_SHORT_NAME)_*.eps
+
+clean-backupfiles:
+	rm -f $(PROJECT_SHORT_NAME).b#*
+	rm -f $(PROJECT_SHORT_NAME).s#*
+
+##### END OF CLEANING TARGETS ######
+

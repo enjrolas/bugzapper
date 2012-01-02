@@ -1,0 +1,45 @@
+#!/bin/sh
+
+EAGLE_SCHEM_OPTIONS="-X -N -s 0.65 -d EPS"
+EAGLE_SCHEM_LAYERS="91 92 94 95 96"
+
+if [ -z "$1" ]
+then
+	echo "Usage: $0 filename.sch [-r] [-m]"
+	exit 1
+fi
+
+for arg in $*
+do
+	case "$arg" in
+		'-r')
+			echo "Rotating output by 90 degrees."
+			EAGLE_SCHEM_OPTIONS="$EAGLE_SCHEM_OPTIONS -r"
+		;;
+		'-m')
+			echo "Mirroring output."
+			EAGLE_SCHEM_OPTIONS="$EAGLE_SCHEM_OPTIONS -m"
+		;;
+	esac
+done
+
+filename=$(echo $1 | sed s/\.sch//)
+suffix="_s"
+echo "Converting $filename.sch to postscript..."
+
+if [ -r $filename.sch ]
+then
+	n="0"
+	while [ "$?" -eq 0 ]
+	do
+		if [ $n -gt "0" ]
+		then
+			echo "Processed sheet $n"
+		fi
+		n=`expr $n + 1`
+		eagle $EAGLE_SCHEM_OPTIONS -o $filename$suffix$n.eps $filename.s$n $EAGLE_SCHEM_LAYERS 2> /dev/null > /dev/null
+	done
+	echo "Done!"
+else
+	echo "Could not read $filename.sch!"
+fi

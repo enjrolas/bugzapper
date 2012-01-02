@@ -1,0 +1,38 @@
+eagle-tools version 0.02, released April 25, 2005
+
+Licensed under the GNU General Public License, see COPYING for full license text.
+
+Copyright Scott Torborg 2005
+
+---
+
+Quick Explanation:
+% eagle-makefile
+% make
+
+---
+
+To install, simply copy the three included executables to your $PATH. You can then use:
+% eagle-makefile
+in any directory with an EAGLE file set (.sch and .brd) to generate a Makefile.
+
+In order to use, the 'eagle' binary must be in your $PATH.
+
+The makefile gives you several different targets:
+
+all: (equivelant to just typing 'make')
+	Generates the doc and freedfm-package targets.
+
+doc: (requires LaTeX)
+	Generates a postscript file with all of the board layers and all schematic pages.
+
+freedfm-package:
+	Generates a zip file with a gerber file for each important layer:
+		- Top Copper
+		- Bottom Copper
+		- Top Silkscreen
+		- Bottom Silkscreen
+		- Top Soldermask
+		- Bottom Soldermask
+		- NC Drill
+	This zip package can then be submitted to freedfm.com or a PCB fabrication service.

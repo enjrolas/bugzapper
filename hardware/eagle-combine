@@ -1,0 +1,74 @@
+#!/usr/bin/perl -w
+
+
+$PROJECT_SHORT_NAME = $ARGV[0];
+
+open(BOTTOM_FILE,$PROJECT_SHORT_NAME."_bottom.eps") || warn "Could not open bottom copper layer.";
+open(TOP_FILE,$PROJECT_SHORT_NAME."_top.eps") || warn "Could not open top copper layer.";
+open(TOP_SILK_FILE,$PROJECT_SHORT_NAME."_top_silk.eps") || warn "Could not open top silkscreen layer.";
+open(DRILL_FILE,$PROJECT_SHORT_NAME."_drill.eps") || warn "Could not open drill layer.";
+
+while(<BOTTOM_FILE>) {
+	if (m/^\%\%BoundingBox:\ (\d+)\ (\d+)\ (\d+)\ (\d+)/) {
+		$first = $1;
+		$second = $2;
+		$third = $3;
+		$fourth = $4;
+		last;
+	}
+}
+
+print <<EOF;
+%!PS-Adobe-3.0 EPSF-3.0
+%%Title: Layer composite for $PROJECT_SHORT_NAME board.
+%%Creator: eagle-tools v0.01
+%%Pages: 1
+EOF
+
+print "%%BoundingBox: $first $second $third $fourth\n";
+
+print <<EOF;
+%%EndComments
+
+% Layer color definitions
+/layer-bottom {
+	0.6 0.6 1.00 setrgbcolor
+	} def
+
+/layer-top {
+	1.00 0.6 0.6 setrgbcolor
+	} def
+
+/layer-top-silk {
+	0.00 0.00 0.00 setrgbcolor
+	} def
+
+/layer-drill {
+	0 0 0 setrgbcolor
+	} def
+EOF
+
+print "layer-bottom\n";
+while(<BOTTOM_FILE>) {
+	if (!(m/^\%/)) {
+		print;
+	}
+}
+print "layer-top\n";
+while(<TOP_FILE>) {
+	if (!(m/^\%/)) {
+		print;
+	}
+}
+print "layer-top-silk\n";
+while(<TOP_SILK_FILE>) {
+	if (!(m/^\%/)) {
+		print;
+	}
+}
+print "layer-drill\n";
+while(<DRILL_FILE>) {
+	if (!(m/^\%/)) {
+		print;
+	}
+}
